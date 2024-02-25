@@ -1,0 +1,5 @@
+[plugin]
+package = "pretix-wallet"
+modules = [ "pretix_wallet" ]
+marketplace_name = "wallet"
+
