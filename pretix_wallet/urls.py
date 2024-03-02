@@ -1,7 +1,9 @@
-from django.urls import path
+from django.urls import path, re_path
 
-from pretix_wallet.views import CustomerLoginReturnView
+from pretix_wallet.views import TransactionListView
 
 organizer_patterns = [
-    path("wallet/return/", CustomerLoginReturnView.as_view(), name="customer_login_return"),
+    #re_path(r'^api/organizers/(?P<organizer>[^/]+)/snippets/', TransactionListView.as_view()),
+    path('account/wallet/', TransactionListView.as_view(), name='wallet'),
 ]
+
