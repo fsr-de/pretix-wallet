@@ -1,27 +1,27 @@
 from _decimal import Decimal
 from typing import Dict, Any, Union
-from urllib.parse import quote
 
+from django.contrib import messages
+from django.db import transaction
 from django.http import HttpRequest
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
-from django_scopes import scope
 from pretix.base.customersso.oidc import oidc_authorize_url
 from pretix.base.models import Order, OrderPayment, GiftCard
-from pretix.base.models.customers import CustomerSSOClient, CustomerSSOProvider
-from pretix.base.payment import BasePaymentProvider, PaymentException, GiftCardPayment
+from pretix.base.models.customers import CustomerSSOProvider
+from pretix.base.payment import PaymentException, GiftCardPayment
 from pretix.base.services.cart import add_payment_to_cart
+from pretix.helpers import OF_SELF
 from pretix.multidomain.urlreverse import build_absolute_uri
 from pretix.presale.views.cart import cart_session
-from pretix.presale.views.customer import SSOLoginView
+
+from pretix_wallet.models import CustomerWallet
 
 
 class WalletPaymentProvider(GiftCardPayment):
     identifier = "wallet"
     verbose_name = _("Wallet")
     public_name = _("Wallet")
-    execute_payment_needs_user = True
-    multi_use_supported = False
 
     def payment_form_render(self, request: HttpRequest, total: Decimal, order: Order=None) -> str:
         return "Wallet payment form"
@@ -32,9 +32,22 @@ class WalletPaymentProvider(GiftCardPayment):
     def checkout_prepare(self, request: HttpRequest, cart: Dict[str, Any]) -> Union[bool, str]:
         if request.customer:
             if not request.customer.wallet:
-                raise PaymentException(_("You do not have a wallet."))
+                messages.error(request, _("You do not have a wallet."))
+                return False
+            if request.customer.wallet.giftcard.value < 0:
+                messages.error(request, _("Your wallet has a negative balance. Please top it up or use another payment method."))
+                return False
+            cart_session(request)
+            add_payment_to_cart(
+                request,
+                self,
+                max_value=request.customer.wallet.giftcard.value,
+                info_data=self._get_payment_info_data(request.customer.wallet),
+            )
             return True
-        next_url = build_absolute_uri(request.event, "presale:event.checkout", kwargs={"step": "confirm"})
+        return self._redirect_user(request, build_absolute_uri(request.event, "presale:event.checkout", kwargs={"step": "payment"}))
+
+    def _redirect_user(self, request: HttpRequest, next_url: str):
         provider = CustomerSSOProvider.objects.last()
 
         # taken from pretix.presale.views.customer.SSOLoginView as it does not allow for a custom next_url
@@ -49,33 +62,57 @@ class WalletPaymentProvider(GiftCardPayment):
 
         return oidc_authorize_url(provider, f'{nonce}%{next_url}', redirect_uri)
 
-    def payment_is_valid_session(self, request: HttpRequest) -> bool:
-        return request.customer is not None
-
-    def _set_payment_info_data(self, request: HttpRequest, payment: OrderPayment, gc: GiftCard):
-        payment.info_data = {
-            'gift_card': gc.pk,
-            'gift_card_secret': gc.secret,
-            'user': request.customer.name_cached,
-            'user_id': request.customer.external_identifier,
+    def _get_payment_info_data(self, wallet: CustomerWallet):
+        return {
+            'gift_card': wallet.giftcard.pk,
+            'gift_card_secret': wallet.giftcard.secret,
+            'user': wallet.customer.name_cached,
+            'user_id': wallet.customer.external_identifier,
             'retry': True
         }
-        payment.save()
 
     def execute_payment(self, request: HttpRequest, payment: OrderPayment, is_early_special_case=False) -> str:
-        gc = request.customer.wallet.giftcard
-        if gc not in self.event.organizer.accepted_gift_cards:
-            raise PaymentException(_("Wallet payments cannot be accepted for this event."))
-        if gc.value < payment.amount:
-            raise PaymentException(_("Your wallet does not have enough credit to pay for this order."))
-        self._set_payment_info_data(request, payment, gc)
-        return super().execute_payment(request, payment, is_early_special_case)
+        # re-implemented as the original method does not allow for giftcards to have negative balance
+
+        gcpk = payment.info_data.get('gift_card')
+        if not gcpk:
+            raise PaymentException("Invalid state, should never occur.")
+        try:
+            with transaction.atomic():
+                try:
+                    gc = GiftCard.objects.select_for_update(of=OF_SELF).get(pk=gcpk)
+                except GiftCard.DoesNotExist:
+                    raise PaymentException(_("This gift card does not support this currency."))
+                if gc.currency != self.event.currency:  # noqa - just a safeguard
+                    raise PaymentException(_("This gift card does not support this currency."))
+                if not gc.accepted_by(self.event.organizer):
+                    raise PaymentException(_("This gift card is not accepted by this event organizer."))
+
+                trans = gc.transactions.create(
+                    value=-1 * payment.amount,
+                    order=payment.order,
+                    payment=payment,
+                    acceptor=self.event.organizer,
+                )
+                payment.info_data['transaction_id'] = trans.pk
+                payment.confirm(send_mail=not is_early_special_case, generate_invoice=not is_early_special_case)
+        except PaymentException as e:
+            payment.fail(info={'error': str(e)})
+            raise e
 
     def payment_prepare(self, request: HttpRequest, payment: OrderPayment) -> Union[bool, str, None]:
-        gc = request.customer.wallet.giftcard
-        if gc not in self.event.organizer.accepted_gift_cards:
-            raise PaymentException(_("Wallet payments cannot be accepted for this event."))
-        if gc.value < payment.amount:
-            raise PaymentException(_("Your wallet does not have enough credit to pay for this order."))
-        self._set_payment_info_data(request, payment, gc)
-        return True
+        if request.customer:
+            if not request.customer.wallet:
+                messages.error(request, _("You do not have a wallet."))
+                return False
+            if request.customer.wallet.giftcard.value < 0:
+                messages.error(request, _("Your wallet has a negative balance. Please top it up or use another payment method."))
+                return False
+            gc = request.customer.wallet.giftcard
+            if gc not in self.event.organizer.accepted_gift_cards:
+                raise PaymentException(_("Wallet payments cannot be accepted for this event."))
+            payment.amount = min(payment.amount, max(gc.value, 0))
+            payment.info_data = self._get_payment_info_data(request.customer.wallet)
+            payment.save()
+            return True
+        return self._redirect_user(request, request.path)
