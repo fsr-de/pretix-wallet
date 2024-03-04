@@ -7,9 +7,15 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 from rest_framework.viewsets import ReadOnlyModelViewSet, GenericViewSet
 
+from pretix_wallet.auth import TerminalAuthentication, TerminalPermission
 from pretix_wallet.models import CustomerWallet
 from pretix_wallet.pagination import CustomPagination, TerminalMetadataPagination
 from pretix_wallet.serializers import ProductSerializer, WalletSerializer, TransactionSerializer
+
+
+class TerminalAuthMixin:
+    authentication_classes = [TerminalAuthentication]
+    permission_classes = [TerminalPermission]
 
 
 class TransactionListView(CustomerRequiredMixin, ListView):
@@ -25,7 +31,7 @@ class TransactionListView(CustomerRequiredMixin, ListView):
         return ctx
 
 
-class ProductViewSet(ReadOnlyModelViewSet):
+class ProductViewSet(TerminalAuthMixin, ReadOnlyModelViewSet):
     serializer_class = ProductSerializer
     pagination_class = TerminalMetadataPagination
 
@@ -33,7 +39,7 @@ class ProductViewSet(ReadOnlyModelViewSet):
         return Item.objects.all()
 
 
-class WalletViewSet(RetrieveModelMixin, GenericViewSet):
+class WalletViewSet(TerminalAuthMixin, RetrieveModelMixin, GenericViewSet):
     serializer_class = WalletSerializer
     pagination_class = CustomPagination
     lookup_url_kwarg = 'token_id'
@@ -45,7 +51,7 @@ class WalletViewSet(RetrieveModelMixin, GenericViewSet):
         return CustomerWallet.objects.get(giftcard__linked_media__identifier=self.kwargs['token_id'])
 
 
-class TransactionViewSet(CreateModelMixin, GenericViewSet):
+class TransactionViewSet(TerminalAuthMixin, CreateModelMixin, GenericViewSet):
     serializer_class = TransactionSerializer
 
     def get_serializer_context(self):

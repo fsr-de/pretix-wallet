@@ -1,8 +1,10 @@
 from _decimal import Decimal
+from collections import OrderedDict
 from typing import Dict, Any, Union
 
 from django.contrib import messages
 from django.db import transaction
+from django.forms import CharField
 from django.http import HttpRequest
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
@@ -116,3 +118,9 @@ class WalletPaymentProvider(GiftCardPayment):
             payment.save()
             return True
         return self._redirect_user(request, request.path)
+
+    @property
+    def settings_form_fields(self):
+        return OrderedDict(list(super().settings_form_fields.items()) + [
+            ('api_key', CharField(label=_("API key"), help_text=_("The API key that the terminal uses to authenticate against the POS api provided by this plugin."))),
+        ])
