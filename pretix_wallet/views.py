@@ -1,5 +1,10 @@
-from django.views.generic import ListView
-from pretix.base.models import GiftCardTransaction, Item
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.views import View
+from django.views.generic import ListView, TemplateView
+from django.utils.translation import gettext_lazy as _
+from pretix.base.media import NfcUidMediaType
+from pretix.base.models import GiftCardTransaction, Item, ReusableMedium
 from pretix.presale.utils import _detect_event
 from pretix.presale.views.customer import CustomerRequiredMixin
 from rest_framework.mixins import RetrieveModelMixin, CreateModelMixin
@@ -28,7 +33,31 @@ class TransactionListView(CustomerRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['wallet'] = self.request.customer.wallet
+        ctx['transponder_paired'] = self.request.customer.wallet.giftcard.linked_media.exists()
         return ctx
+
+
+class PairingView(CustomerRequiredMixin, TemplateView):
+    template_name = "pretix_wallet/pairing.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['already_paired'] = self.request.customer.wallet.giftcard.linked_media.exists()
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        medium, created = ReusableMedium.objects.get_or_create(identifier=self.kwargs["token_id"], organizer=self.request.organizer, type=NfcUidMediaType.identifier)
+        self.request.customer.wallet.giftcard.linked_media.set([medium])
+        medium.save()
+        messages.success(request, _("Your transponder has been paired succesfully."))
+        return redirect("plugins:pretix_wallet:wallet", organizer=self.request.organizer.slug)
+
+
+class RemovePairingView(CustomerRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        self.request.customer.wallet.giftcard.linked_media.clear()
+        messages.success(request, _("Your transponder has been unpaired succesfully."))
+        return redirect("plugins:pretix_wallet:wallet", organizer=self.request.organizer.slug)
 
 
 class ProductViewSet(TerminalAuthMixin, ReadOnlyModelViewSet):

@@ -1,0 +1,26 @@
+{% extends "pretix_wallet/wallet_base.html" %}
+{% load i18n %}
+
+{% block title %}
+    {{ block.super }} - {% translate "Pairing" %}
+{% endblock %}
+
+{% block content %}
+    <div class="box">
+        <p class="heading">{% translate "Pair your transponder" %}</p>
+        <p>{% blocktranslate trimmed %}You are about to pair your transponder ({{ token_id }}) with your wallet ({{ user }}).
+            Please make sure to keep it with you at all times as it can be used to debit balance at our terminals from now on.{% endblocktranslate %}</p>
+        {% if already_paired %}
+            <p class="has-text-danger has-text-weight-bold">
+                {% blocktranslate trimmed %}
+                    Your wallet is already paired to a transponder. If you continue with this pairing, the old pairing will be removed.
+                {% endblocktranslate %}
+            </p>
+        {% endif %}
+        <form class="mt-3" method="post">
+            {% csrf_token %}
+            <a class="button is-danger is-outlined" href="{% url "plugins:pretix_wallet:wallet" request.organizer.slug %}">{% translate "Cancel" %}</a>
+            <input type="submit" class="button is-success" value="{% translate "Pair" %}" />
+        </form>
+    </div>
+{% endblock %}

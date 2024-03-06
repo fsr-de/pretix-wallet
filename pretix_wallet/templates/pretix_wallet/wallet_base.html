@@ -1,0 +1,42 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}VerDE Wallet{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/wallet.scss" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/bulma.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/fontawesome.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/brands.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/solid.min.css" %}">
+</head>
+<body>
+<section class="hero is-primary is-small">
+    <div class="hero-body">
+        <div class="container">
+            <div class="columns is-vcentered">
+                <div class="column">
+                    <h1 class="title">
+                        VerDE Wallet
+                    </h1>
+                </div>
+                <div class="column is-narrow">
+                    <p class="content">
+                        <span>Signed in as</span> <b>{{ request.customer.email }}</b>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div>
+    <section class="section">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </section>
+</div>
+</body>
+</html>

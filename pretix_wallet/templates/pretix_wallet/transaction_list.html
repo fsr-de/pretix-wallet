@@ -1,102 +1,84 @@
-{% load static %}
+{% extends "pretix_wallet/wallet_base.html" %}
+{% load i18n %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Test</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/wallet.scss" %}">
-    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/bulma.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/fontawesome.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/brands.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static "pretix_wallet/css/solid.min.css" %}">
-</head>
-<body>
-<section class="hero is-primary is-small">
-    <div class="hero-body">
-        <div class="container">
-            <div class="columns is-vcentered">
-                <div class="column">
-                    <h1 class="title">
-                        VerDE Wallet
-                    </h1>
+{% block title %}
+    {{ block.super }} - {% translate "Transactions" %}
+{% endblock %}
+
+{% block content %}
+    <div class="columns">
+        <div class="column">
+            <div class="box">
+                <div class="columns is-vcentered has-minheight">
+                    <div class="column">
+                        <p class="heading"> Current balance </p>
+                        <p class="title {% if wallet.giftcard.value > 0 %}has-text-success{% else %}has-text-danger{% endif %} is-2">{{ wallet.giftcard.value|floatformat:2 }}&nbsp;€</p>
+                    </div>
                 </div>
-                <div class="column is-narrow">
-                    <p class="content">
-                        <span>Signed in as</span> <b>{{ request.customer.email }}</b>
-                    </p>
+            </div>
+        </div>
+        <div class="column">
+            <div class="box">
+                <div class="columns is-vcentered has-minheight">
+                    <div class="column">
+                        <div class="columns is-mobile">
+                            <div class="column is-narrow"><i class="fa fa-wifi fa-3x"></i></div>
+                            <div class="column">
+                                <p class="heading">Your transponder</p>
+                                {% if transponder_paired %}
+                                    <p class="tag is-light is-success">{% translate "Successfully paired" %}</p>
+                                {% else %}
+                                    <p class="tag is-light is-danger">{% translate "Not paired" %}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if transponder_paired %}
+                        <div class="column is-narrow">
+                            <form method="post" action="{% url "plugins:pretix_wallet:unpair" request.organizer.slug %}">
+                                {% csrf_token %}
+                                <button type="submit" class="button is-outlined is-danger has-icons-left is-fullwidth">
+                                    <span class="icon"><i class="fa fa-unlink"></i></span>
+                                    <span>{% translate "Forget my transponder" %}</span>
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="column is-narrow">
+                            <p class="is-wrapped">{% translate "Hold your transponder to a terminal and follow the instructions on screen to pair." %}</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-</section>
-<div>
-    <section class="section">
-        <div class="container">
-            <div class="columns">
-                <div class="column">
-                    <div class="box">
-                        <div class="columns is-vcentered has-minheight">
-                            <div class="column">
-                                <p class="heading"> Current balance </p>
-                                <p class="title {% if wallet.giftcard.value > 0 %}has-text-success{% else %}has-text-danger{% endif %} is-2">{{ wallet.giftcard.value|floatformat:2 }}&nbsp;€</p>
-                            </div>
+    <div class="box">
+        <p class="heading"> Latest 20 transactions </p>
+        <hr>
+        <div>
+            {% for transaction in giftcardtransaction_list %}
+                <article class="media">
+                    <div class="media-left is-hidden-mobile"><span class="icon is-large"><i
+                            class="fa-2x fa fa-mug-hot"></i></span></div>
+                    <div class="media-content">
+                        <div class="content">
+                            {% if transaction.order %}
+                                <p>
+                                    <strong> {{ transaction.order }}</strong><br><span>{{ transaction.order.positions|join:" " }}</span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
+                                </p>
+                            {% else %}
+                                <p>
+                                    <strong>{{ transaction.text }}</strong><br><span>1 x Cappuccino</span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
+                                </p>
+                            {% endif %}
                         </div>
                     </div>
-                </div>
-                <div class="column">
-                    <div class="box">
-                        <div class="columns is-vcentered has-minheight">
-                            <div class="column">
-                                <div class="columns is-mobile">
-                                    <div class="column is-narrow"><i class="fa fa-wifi fa-3x"></i></div>
-                                    <div class="column">
-                                        <p class="heading">Your transponder</p>
-                                        <p class="tag is-light is-success">Successfully paired</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="column is-narrow">
-                                <button class="button is-outlined is-danger has-icons-left is-fullwidth"><span
-                                        class="icon"><i
-                                        class="fa fa-unlink"></i></span><span>Forget my transponder</span></button>
-                            </div>
-                        </div>
+                    <div class="media-right">
+                        <p class="title {% if transaction.value > 0 %}has-text-success{% else %}has-text-danger{% endif %} is-4">{{ transaction.value }}
+                            &nbsp;€</p>
                     </div>
-                </div>
-            </div>
-            <div class="box">
-                <p class="heading"> Latest 20 transactions </p>
-                <hr>
-                <div>
-                    {% for transaction in giftcardtransaction_list %}
-                        <article class="media">
-                            <div class="media-left is-hidden-mobile"><span class="icon is-large"><i
-                                    class="fa-2x fa fa-mug-hot"></i></span></div>
-                            <div class="media-content">
-                                <div class="content">
-                                    {% if transaction.order %}
-                                        <p>
-                                            <strong> {{ transaction.order }}</strong><br><span>{{ transaction.order.positions|join:" " }}</span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
-                                        </p>
-                                    {% else %}
-                                        <p>
-                                            <strong>{{ transaction.text }}</strong><br><span>1 x Cappuccino</span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
-                                        </p>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="media-right">
-                                <p class="title {% if transaction.value > 0 %}has-text-success{% else %}has-text-danger{% endif %} is-4">{{ transaction.value }}
-                                    &nbsp;€</p>
-                            </div>
-                        </article>
-                    {% endfor %}
-                </div>
-            </div>
+                </article>
+            {% endfor %}
         </div>
-    </section>
-</div>
-</body>
-</html>
+    </div>
+{% endblock %}
