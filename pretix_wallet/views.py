@@ -1,10 +1,12 @@
 from django.contrib import messages
+from django.http import Http404
 from django.shortcuts import redirect
 from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.utils.translation import gettext_lazy as _
 from pretix.base.media import NfcUidMediaType
-from pretix.base.models import GiftCardTransaction, Item, ReusableMedium
+from pretix.base.models import GiftCardTransaction, Item, ReusableMedium, GiftCard
+from pretix.base.models.giftcards import gen_giftcard_secret
 from pretix.presale.utils import _detect_event
 from pretix.presale.views.customer import CustomerRequiredMixin
 from rest_framework.mixins import RetrieveModelMixin, CreateModelMixin
@@ -23,7 +25,21 @@ class TerminalAuthMixin:
     permission_classes = [TerminalPermission]
 
 
-class TransactionListView(CustomerRequiredMixin, ListView):
+class WalletRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            _ = request.customer.wallet
+        except CustomerWallet.DoesNotExist:
+            giftcard = GiftCard.objects.create(
+                issuer=request.organizer,
+                currency="EUR",
+                conditions=f"Wallet for {request.customer.name_cached} ({request.customer.email})",
+                secret=f"{request.customer.email.split('@')[0]}-{gen_giftcard_secret(length=request.organizer.settings.giftcard_length)}")
+            CustomerWallet.objects.create(customer=request.customer, giftcard=giftcard)
+        return super().dispatch(request, *args, **kwargs)
+
+
+class TransactionListView(CustomerRequiredMixin, WalletRequiredMixin, ListView):
     model = GiftCardTransaction
     template_name = "pretix_wallet/transaction_list.html"
 
@@ -37,7 +53,7 @@ class TransactionListView(CustomerRequiredMixin, ListView):
         return ctx
 
 
-class PairingView(CustomerRequiredMixin, TemplateView):
+class PairingView(CustomerRequiredMixin, WalletRequiredMixin, TemplateView):
     template_name = "pretix_wallet/pairing.html"
 
     def get_context_data(self, **kwargs):
@@ -53,7 +69,7 @@ class PairingView(CustomerRequiredMixin, TemplateView):
         return redirect("plugins:pretix_wallet:wallet", organizer=self.request.organizer.slug)
 
 
-class RemovePairingView(CustomerRequiredMixin, View):
+class RemovePairingView(CustomerRequiredMixin, WalletRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.request.customer.wallet.giftcard.linked_media.clear()
         messages.success(request, _("Your transponder has been unpaired succesfully."))
@@ -77,7 +93,10 @@ class WalletViewSet(TerminalAuthMixin, RetrieveModelMixin, GenericViewSet):
         return CustomerWallet.objects.all()
 
     def get_object(self):
-        return CustomerWallet.objects.get(giftcard__linked_media__identifier=self.kwargs['token_id'])
+        try:
+            return CustomerWallet.objects.get(giftcard__linked_media__identifier=self.kwargs['token_id'])
+        except CustomerWallet.DoesNotExist:
+            raise Http404
 
 
 class TransactionViewSet(TerminalAuthMixin, CreateModelMixin, GenericViewSet):
