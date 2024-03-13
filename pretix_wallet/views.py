@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.utils.translation import gettext_lazy as _
 from pretix.base.media import NfcUidMediaType
 from pretix.base.models import GiftCardTransaction, Item, ReusableMedium, GiftCard
-from pretix.base.models.giftcards import gen_giftcard_secret
+from pretix.multidomain.urlreverse import build_absolute_uri
 from pretix.presale.utils import _detect_event
 from pretix.presale.views.customer import CustomerRequiredMixin
 from rest_framework.mixins import RetrieveModelMixin, CreateModelMixin
@@ -27,15 +28,7 @@ class TerminalAuthMixin:
 
 class WalletRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
-        try:
-            _ = request.customer.wallet
-        except CustomerWallet.DoesNotExist:
-            giftcard = GiftCard.objects.create(
-                issuer=request.organizer,
-                currency="EUR",
-                conditions=f"Wallet for {request.customer.name_cached} ({request.customer.email})",
-                secret=f"{request.customer.email.split('@')[0]}-{gen_giftcard_secret(length=request.organizer.settings.giftcard_length)}")
-            CustomerWallet.objects.create(customer=request.customer, giftcard=giftcard)
+        CustomerWallet.create_if_non_existent(request.organizer, request.customer)
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -115,3 +108,11 @@ class TransactionViewSet(TerminalAuthMixin, CreateModelMixin, GenericViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(WalletSerializer(self.wallet).data, status=HTTP_201_CREATED)
+
+
+class WalletRequiredRedirectView(CustomerRequiredMixin, WalletRequiredMixin, View):
+    def get(self, *args, **kwargs):
+        if self.request.GET.get('next'):
+            return redirect(self.request.GET.get('next'))
+        else:
+            return redirect(build_absolute_uri(self.request.organizer, "plugins:pretix_wallet:wallet"))
