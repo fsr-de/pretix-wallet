@@ -8,7 +8,7 @@
 {% block content %}
     <div class="box">
         <p class="heading">{% translate "Pair your transponder" %}</p>
-        <p>{% blocktranslate trimmed %}You are about to pair your transponder ({{ token_id }}) with your wallet ({{ user }}).
+        <p>{% blocktranslate trimmed with email=request.customer.email %}You are about to pair your transponder ({{ token_id }}) with your wallet ({{ email }}).
             Please make sure to keep it with you at all times as it can be used to debit balance at our terminals from now on.{% endblocktranslate %}</p>
         {% if already_paired %}
             <p class="has-text-danger has-text-weight-bold">
