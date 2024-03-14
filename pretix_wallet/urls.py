@@ -11,7 +11,7 @@ event_router.register(r'wallet/pos/wallets/token', WalletViewSet, basename='user
 event_router.register(r'wallet/pos/wallets/token/(?P<token_id>[^/.]+)/transactions', TransactionViewSet, basename='transactions')
 
 organizer_patterns = [
-    path('account/wallet/', TransactionListView.as_view(), name='wallet'),
+    path('account/wallet/', TransactionListView.as_view(), name='transactions'),
     path('account/wallet/pair/<str:token_id>/', PairingView.as_view(), name='pair'),
     path('account/wallet/unpair/', RemovePairingView.as_view(), name='unpair'),
 ]
