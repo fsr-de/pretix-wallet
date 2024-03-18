@@ -24,7 +24,7 @@
                 </div>
                 <div class="column is-narrow">
                     <p class="content">
-                        <span>Signed in as</span> <b>{{ request.customer.email }}</b>
+                        <span>Signed in as</span> <b>{{ request.customer.name_cached }}</b> · <a href="{% url 'presale:organizer.customer.logout' request.customer.organizer.slug %}?next={% url "plugins:pretix_wallet:transactions" request.customer.organizer.slug %}">Log out</a>
                     </p>
                 </div>
             </div>

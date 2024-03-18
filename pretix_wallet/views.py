@@ -59,14 +59,14 @@ class PairingView(CustomerRequiredMixin, WalletRequiredMixin, TemplateView):
         self.request.customer.wallet.giftcard.linked_media.set([medium])
         medium.save()
         messages.success(request, _("Your transponder has been paired succesfully."))
-        return redirect("plugins:pretix_wallet:wallet", organizer=self.request.organizer.slug)
+        return redirect("plugins:pretix_wallet:transactions", organizer=self.request.organizer.slug)
 
 
 class RemovePairingView(CustomerRequiredMixin, WalletRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.request.customer.wallet.giftcard.linked_media.clear()
         messages.success(request, _("Your transponder has been unpaired succesfully."))
-        return redirect("plugins:pretix_wallet:wallet", organizer=self.request.organizer.slug)
+        return redirect("plugins:pretix_wallet:transactions", organizer=self.request.organizer.slug)
 
 
 class ProductViewSet(TerminalAuthMixin, ReadOnlyModelViewSet):
