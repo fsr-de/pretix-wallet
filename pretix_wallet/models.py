@@ -46,7 +46,7 @@ def get_or_create_wallet_membership_type(organizer):
 
 def create_membership_if_not_existant(organizer, customer):
     membership_type = get_or_create_wallet_membership_type(organizer)
-    if not membership_type.memberships.filter(customer=customer).first():
+    if not membership_type.memberships.filter(customer=customer).exists():
         Membership.objects.create(
             testmode=False,
             customer=customer,

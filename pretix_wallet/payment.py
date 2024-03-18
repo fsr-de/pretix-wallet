@@ -141,7 +141,7 @@ class WalletPaymentProvider(GiftCardPayment):
             #     choices=product_choices))
         ])
 
-def _wallet_transaction(event, payment: OrderPayment, gift_card: GiftCard, sign=-1):
+def _wallet_transaction(event, payment: OrderPayment, gift_card: GiftCard, sign=-1, amount=None):
     with transaction.atomic():
         if gift_card.currency != event.currency:  # noqa - just a safeguard
             raise PaymentException(_("This gift card does not support this currency."))
@@ -149,12 +149,8 @@ def _wallet_transaction(event, payment: OrderPayment, gift_card: GiftCard, sign=
             raise PaymentException(_("This gift card is not accepted by this event organizer."))
 
         return gift_card.transactions.create(
-            value=sign * payment.amount,
+            value=sign * (amount if amount else payment.amount),
             order=payment.order,
             payment=payment,
             acceptor=event.organizer,
         )
-def position_is_top_up_product(event, position):
-    top_up_products = event.settings.get("payment_wallet_top_up_products").lower().split(',')
-    product_name = position.item.name.localize('en').lower()
-    return product_name in top_up_products
