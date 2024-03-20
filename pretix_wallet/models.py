@@ -40,7 +40,7 @@ def get_or_create_wallet_membership_type(organizer):
         organizer=organizer,
         allow_parallel_usage=True,
         transferable=False,
-        max_usages=False,
+        max_usages=None,
     )
 
 

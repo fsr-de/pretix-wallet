@@ -77,9 +77,6 @@ class WalletPaymentProvider(GiftCardPayment):
             'retry': True
         }
 
-
-
-
     def execute_payment(self, request: HttpRequest, payment: OrderPayment, is_early_special_case=False) -> str:
         # re-implemented as the original method does not allow for giftcards to have negative balance
 
@@ -128,7 +125,8 @@ class WalletPaymentProvider(GiftCardPayment):
             ('top_up_products', CharField(
                 label=_("Products used to charge wallet accounts"),
                 help_text=_(
-                  "Comma separated list of English product names, Buying these products will charge a users wallet by their price. Remeber, to require the Wallet memberships for these products to force users to login."),
+                    "Comma separated list of English product names, Buying these products will charge a users wallet by"
+                    "their price. Remeber, to require the Wallet memberships for these products to force users to login."),
             ))
             # ('top_up_products', MultipleChoiceField(
             #     widget=CheckboxSelectMultiple,
@@ -140,6 +138,7 @@ class WalletPaymentProvider(GiftCardPayment):
             #         "Buying these products will charge a users wallet by their price. Remeber, to require the Wallet memberships for these products to force users to login."),
             #     choices=product_choices))
         ])
+
 
 def _wallet_transaction(event, payment: OrderPayment, gift_card: GiftCard, sign=-1, amount=None):
     with transaction.atomic():
