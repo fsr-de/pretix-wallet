@@ -4,9 +4,7 @@ from django.shortcuts import redirect
 from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.utils.translation import gettext_lazy as _
-from pretix.base.media import NfcUidMediaType
-from pretix.base.models import GiftCardTransaction, Item, ReusableMedium, GiftCard
-from pretix.base.models.giftcards import gen_giftcard_secret
+from pretix.base.models import GiftCardTransaction, Item
 from pretix.presale.utils import _detect_event
 from pretix.presale.views.customer import CustomerRequiredMixin
 from rest_framework.mixins import RetrieveModelMixin, CreateModelMixin
@@ -17,7 +15,9 @@ from rest_framework.viewsets import ReadOnlyModelViewSet, GenericViewSet
 from pretix_wallet.auth import TerminalAuthentication, TerminalPermission
 from pretix_wallet.models import CustomerWallet
 from pretix_wallet.pagination import CustomPagination, ProductPagination
-from pretix_wallet.serializers import ProductSerializer, WalletSerializer, TransactionSerializer
+from pretix_wallet.serializers import ProductSerializer, WalletSerializer, TransactionSerializer, \
+    CustomerWalletSerializer
+from pretix_wallet.utils import link_token_to_wallet, create_customerwallet_if_not_exists
 
 
 class TerminalAuthMixin:
@@ -27,15 +27,7 @@ class TerminalAuthMixin:
 
 class WalletRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
-        try:
-            _ = request.customer.wallet
-        except CustomerWallet.DoesNotExist:
-            giftcard = GiftCard.objects.create(
-                issuer=request.organizer,
-                currency="EUR",
-                conditions=f"Wallet for {request.customer.name_cached} ({request.customer.email})",
-                secret=f"{request.customer.email.split('@')[0]}-{gen_giftcard_secret(length=request.organizer.settings.giftcard_length)}")
-            CustomerWallet.objects.create(customer=request.customer, giftcard=giftcard)
+        create_customerwallet_if_not_exists(request.organizer, request.customer)
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -62,9 +54,7 @@ class PairingView(CustomerRequiredMixin, WalletRequiredMixin, TemplateView):
         return ctx
 
     def post(self, request, *args, **kwargs):
-        medium, created = ReusableMedium.objects.get_or_create(identifier=self.kwargs["token_id"], organizer=self.request.organizer, type=NfcUidMediaType.identifier)
-        self.request.customer.wallet.giftcard.linked_media.set([medium])
-        medium.save()
+        link_token_to_wallet(self.request.organizer, self.request.customer, self.kwargs["token_id"])
         messages.success(request, _("Your transponder has been paired succesfully."))
         return redirect("plugins:pretix_wallet:transactions", organizer=self.request.organizer.slug)
 
@@ -115,3 +105,12 @@ class TransactionViewSet(TerminalAuthMixin, CreateModelMixin, GenericViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(WalletSerializer(self.wallet).data, status=HTTP_201_CREATED)
+
+
+class CustomerCreateWalletViewSet(CreateModelMixin, GenericViewSet):
+    serializer_class = CustomerWalletSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["organizer"] = self.request.organizer
+        return context

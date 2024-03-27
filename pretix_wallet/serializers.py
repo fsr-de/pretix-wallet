@@ -1,12 +1,13 @@
 from datetime import datetime
 
 from django.db import transaction
-from pretix.base.models import Item, Order, OrderPosition
+from pretix.base.models import Item, Order, OrderPosition, GiftCardTransaction
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SerializerMethodField, CharField, ListField, DateTimeField
+from rest_framework.fields import SerializerMethodField, CharField, ListField, DateTimeField, IntegerField
 from rest_framework.serializers import Serializer, ModelSerializer
 
 from pretix_wallet.models import CustomerWallet
+from pretix_wallet.utils import link_token_to_wallet, create_customerwallet_if_not_exists
 
 
 class ProductSerializer(ModelSerializer):
@@ -75,3 +76,28 @@ class TransactionSerializer(Serializer):
             payment.payment_provider.execute_payment(None, payment)
             order.create_transactions()
             return order
+
+
+class CustomerWalletSerializer(ModelSerializer):
+    initial_balance = IntegerField(write_only=True, required=False)
+    token_id = CharField(write_only=True, required=False)
+
+    class Meta:
+        model = CustomerWallet
+        fields = ['customer', "initial_balance", "token_id"]
+
+    def create(self, validated_data):
+        wallet, created = create_customerwallet_if_not_exists(self.context["organizer"], validated_data["customer"])
+        if created:
+            if "initial_balance" in validated_data:
+                GiftCardTransaction.objects.create(
+                    card=validated_data["customer"].wallet.giftcard,
+                    value=validated_data["initial_balance"],
+                    acceptor=self.context["organizer"],
+                    text="Transferred balance"
+                )
+            if "token_id" in validated_data:
+                link_token_to_wallet(self.context["organizer"], validated_data["customer"], validated_data["token_id"])
+            return wallet
+        else:
+            raise ValidationError("Wallet already exists")
