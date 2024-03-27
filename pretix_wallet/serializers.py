@@ -23,7 +23,7 @@ class ProductSerializer(ModelSerializer):
 
 class WalletSerializer(ModelSerializer):
     token_id = CharField(source='customer.wallet.giftcard.linked_media.first.identifier')
-    paired_user = CharField(source='customer.external_identifier')
+    paired_user = CharField(source='customer.name_cached')
     balance = SerializerMethodField()
     created_at = DateTimeField(source='customer.wallet.giftcard.issuance')
 
