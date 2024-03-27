@@ -14,7 +14,7 @@ class CustomPagination(pagination.PageNumberPagination):
         })
 
 
-class TerminalMetadataPagination(pagination.PageNumberPagination):
+class ProductPagination(pagination.PageNumberPagination):
     def get_paginated_response(self, data):
         return Response({
             'links': {
@@ -23,9 +23,6 @@ class TerminalMetadataPagination(pagination.PageNumberPagination):
             },
             'count': self.page.paginator.count,
             'data': {
-                "id": "coffee_machine",
-                "friendly_name": "Kaffeemaschine",
-                "permission": "debit",
                 "products": data,
             }
         })

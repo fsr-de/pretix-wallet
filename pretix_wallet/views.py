@@ -16,7 +16,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet, GenericViewSet
 
 from pretix_wallet.auth import TerminalAuthentication, TerminalPermission
 from pretix_wallet.models import CustomerWallet
-from pretix_wallet.pagination import CustomPagination, TerminalMetadataPagination
+from pretix_wallet.pagination import CustomPagination, ProductPagination
 from pretix_wallet.serializers import ProductSerializer, WalletSerializer, TransactionSerializer
 
 
@@ -78,7 +78,7 @@ class RemovePairingView(CustomerRequiredMixin, WalletRequiredMixin, View):
 
 class ProductViewSet(TerminalAuthMixin, ReadOnlyModelViewSet):
     serializer_class = ProductSerializer
-    pagination_class = TerminalMetadataPagination
+    pagination_class = ProductPagination
 
     def get_queryset(self):
         return Item.objects.all()
