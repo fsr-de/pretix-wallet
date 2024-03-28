@@ -12,6 +12,15 @@
     color: #006735 !important;
 }
 
+.same-height {
+    height: inherit !important;
+}
+
+.is-fullheight {
+    height: 100% !important;
+
+}
+
 * :not(i) {
     font-family: "Montserrat" !important;
 }
