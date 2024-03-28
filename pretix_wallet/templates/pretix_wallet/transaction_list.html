@@ -1,5 +1,6 @@
 {% extends "pretix_wallet/wallet_base.html" %}
 {% load i18n %}
+{% load eventurl %}
 
 {% block title %}
     {{ block.super }} - {% translate "Transactions" %}
@@ -58,17 +59,29 @@
         <div>
             {% for transaction in giftcardtransaction_list %}
                 <article class="media">
+                    {% if transaction.order %}
                     <div class="media-left is-hidden-mobile"><span class="icon is-large"><i
-                            class="fa-2x fa fa-mug-hot"></i></span></div>
+                            class="fa-2x fa fa-cash-register"></i></span></div>
+                    {% else %}
+                    <div class="media-left is-hidden-mobile"><span class="icon is-large"><i
+                        class="fa-2x fa fa-bolt"></i></span></div>
+                    {% endif %}
                     <div class="media-content">
                         <div class="content">
                             {% if transaction.order %}
                                 <p>
-                                    <strong> {{ transaction.order }}</strong><br><span>{{ transaction.order.positions|join:" " }}</span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
+                                    <strong>
+                                        <a class="orderlink" href="{% abseventurl transaction.order.event "presale:event.order" order=transaction.order.code secret=transaction.order.secret %}" target="_blank">
+                                            {{ transaction.order }}
+                                        </a>
+                                    </strong>
+                                    <br>
+                                    <span>{{ transaction.order.positions.count }} {% translate "item(s)" %}</span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
                                 </p>
+
                             {% else %}
                                 <p>
-                                    <strong>{{ transaction.text }}</strong><br><span>1 x Cappuccino</span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
+                                    <strong>{{ transaction.text }}</strong><br><span></span><span>{{ transaction.datetime }}</span>
                                 </p>
                             {% endif %}
                         </div>

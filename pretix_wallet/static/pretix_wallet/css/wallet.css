@@ -1,0 +1,17 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url('/static/pretix_wallet/webfonts/Montserrat-VariableFont_wght.ttf') format('truetype'),
+    url('/static/pretix_wallet/webfonts/Montserrat-Italic-VariableFont_wght.ttf') format('truetype');
+}
+
+#top-bar {
+    background-color: #006735 !important;
+}
+
+.orderlink {
+    color: #006735 !important;
+}
+
+* :not(i) {
+    font-family: "Montserrat" !important;
+}
