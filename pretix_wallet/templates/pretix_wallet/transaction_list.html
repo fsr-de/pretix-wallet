@@ -76,7 +76,13 @@
                                         </a>
                                     </strong>
                                     <br>
-                                    <span>{{ transaction.order.positions.count }} {% translate "item(s)" %}</span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
+                                    <span>{{ transaction.order.positions.count }}
+                                        {% blocktranslate trimmed count count=transaction.order.positions.count %}
+                                            item
+                                        {% plural %}
+                                            items
+                                        {% endblocktranslate %}
+                                    </span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
                                 </p>
 
                             {% else %}
