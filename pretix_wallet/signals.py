@@ -72,6 +72,8 @@ class MembershipGrantingCheckoutFlowStep(CartMixin, BaseCheckoutFlowStep):
 
 
 def position_is_top_up_product(event, position):
+    if not event.settings.get("payment_wallet_top_up_products"):
+        return False
     top_up_products = event.settings.get("payment_wallet_top_up_products").lower().split(',')
     product_name = position.item.name.localize('en').lower()
     return product_name in top_up_products
