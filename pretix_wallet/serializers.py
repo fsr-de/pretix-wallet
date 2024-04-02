@@ -7,7 +7,7 @@ from rest_framework.fields import SerializerMethodField, CharField, ListField, D
 from rest_framework.serializers import Serializer, ModelSerializer
 
 from pretix_wallet.models import CustomerWallet
-from pretix_wallet.utils import link_token_to_wallet, create_customerwallet_if_not_exists
+from pretix_wallet.utils import link_token_to_wallet, create_customerwallet_if_not_exists, CustomerRelatedField
 
 
 class ProductSerializer(ModelSerializer):
@@ -81,6 +81,7 @@ class TransactionSerializer(Serializer):
 class CustomerWalletSerializer(ModelSerializer):
     initial_balance = IntegerField(write_only=True, required=False)
     token_id = CharField(write_only=True, required=False)
+    customer = CustomerRelatedField(slug_field="identifier")
 
     class Meta:
         model = CustomerWallet

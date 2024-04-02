@@ -1,6 +1,8 @@
+from django_scopes import scope
 from pretix.base.media import NfcUidMediaType
-from pretix.base.models import ReusableMedium, GiftCard
+from pretix.base.models import ReusableMedium, GiftCard, Customer
 from pretix.base.models.giftcards import gen_giftcard_secret
+from rest_framework.relations import SlugRelatedField
 
 from pretix_wallet.models import CustomerWallet
 
@@ -26,3 +28,9 @@ def create_customerwallet_if_not_exists(organizer, customer):
         wallet = CustomerWallet.objects.create(customer=customer, giftcard=giftcard)
         created = True
     return wallet, created
+
+
+class CustomerRelatedField(SlugRelatedField):
+    def get_queryset(self):
+        with scope(organizer=self.context["organizer"]):
+            return Customer.objects.all()
