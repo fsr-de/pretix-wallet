@@ -26,10 +26,10 @@ class WalletPaymentProvider(GiftCardPayment):
     public_name = _("Wallet")
 
     def payment_form_render(self, request: HttpRequest, total: Decimal, order: Order=None) -> str:
-        return "Wallet payment form"
+        return _("Pay with balance on your wallet. Pleas note that this is only possible if you already topped up your wallet and the balance is not negative.")
 
     def checkout_confirm_render(self, request, order: Order=None, info_data: dict=None) -> str:
-        return "Wallet confirm"
+        return _("The full amount will be deducted from your wallet after you confirm the order.")
 
     def checkout_prepare(self, request: HttpRequest, cart: Dict[str, Any]) -> Union[bool, str]:
         if request.customer:
@@ -84,7 +84,7 @@ class WalletPaymentProvider(GiftCardPayment):
                 try:
                     gc = GiftCard.objects.select_for_update(of=OF_SELF).get(pk=gcpk)
                 except GiftCard.DoesNotExist:
-                    raise PaymentException(_("This gift card does not support this currency."))
+                    raise PaymentException("Invalid state, should never occur.")
                 if gc.currency != self.event.currency:  # noqa - just a safeguard
                     raise PaymentException(_("This gift card does not support this currency."))
                 if not gc.accepted_by(self.event.organizer):
@@ -124,3 +124,8 @@ class WalletPaymentProvider(GiftCardPayment):
         return OrderedDict(list(super().settings_form_fields.items()) + [
             ('api_key', CharField(label=_("API key"), help_text=_("The API key that the terminal uses to authenticate against the POS api provided by this plugin."))),
         ])
+
+    @property
+    def test_mode_message(self) -> str:
+        # return None to indicate that we do not support testmode
+        return None
