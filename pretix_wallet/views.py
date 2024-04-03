@@ -71,7 +71,8 @@ class ProductViewSet(TerminalAuthMixin, ReadOnlyModelViewSet):
     pagination_class = ProductPagination
 
     def get_queryset(self):
-        return Item.objects.all()
+        _detect_event(self.request)
+        return self.request.event.items.all()
 
 
 class WalletViewSet(TerminalAuthMixin, RetrieveModelMixin, GenericViewSet):
