@@ -15,6 +15,10 @@ def link_token_to_wallet(organizer, customer, token_id):
     medium.save()
 
 
+def email_address_to_user_slug(email):
+    return email.split('@')[0]
+
+
 def create_customerwallet_if_not_exists(organizer, customer):
     try:
         created = False
@@ -24,7 +28,7 @@ def create_customerwallet_if_not_exists(organizer, customer):
             issuer=organizer,
             currency="EUR",
             conditions=f"Wallet for {customer.name_cached} ({customer.email})",
-            secret=f"{customer.email.split('@')[0]}-{gen_giftcard_secret(length=organizer.settings.giftcard_length)}")
+            secret=f"{email_address_to_user_slug(customer.email)}-{gen_giftcard_secret(length=organizer.settings.giftcard_length)}")
         wallet = CustomerWallet.objects.create(customer=customer, giftcard=giftcard)
         created = True
     return wallet, created

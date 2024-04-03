@@ -4,101 +4,130 @@
 {% load eventurl %}
 
 {% block title %}
-    {{ block.super }} - {% translate "Transactions" %}
+{{ block.super }} - {% translate "Transactions" %}
 {% endblock %}
 
 {% block content %}
-    <div class="columns">
-        <div class="column same-height">
-            <div class="box is-fullheight">
-                <div class="columns is-vcentered has-minheight">
-                    <div class="column">
-                        <p class="heading"> Current balance </p>
-                        <p class="title {% if wallet.giftcard.value > 0 %}has-text-success{% else %}has-text-danger{% endif %} is-2">{{ wallet.giftcard.value|floatformat:2 }}&nbsp;€</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="column same-height">
-            <div class="box is-fullheight">
-                <div class="columns is-vcentered has-minheight">
-                    <div class="column">
-                        <div class="columns is-mobile">
-                            <div class="column is-narrow"><i class="fa fa-wifi fa-3x"></i></div>
-                            <div class="column">
-                                <p class="heading">Your transponder</p>
-                                {% if transponder_paired %}
-                                    <p class="tag is-light is-success">{% translate "Successfully paired" %}</p>
-                                {% else %}
-                                    <p class="tag is-light is-danger">{% translate "Not paired" %}</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% if transponder_paired %}
-                        <div class="column is-narrow">
-                            <form method="post" action="{% organizer_url request.organizer "plugins:pretix_wallet:unpair" %}">
-                                {% csrf_token %}
-                                <button type="submit" class="button is-outlined is-danger has-icons-left is-fullwidth">
-                                    <span class="icon"><i class="fa fa-unlink"></i></span>
-                                    <span>{% translate "Forget my transponder" %}</span>
-                                </button>
-                            </form>
-                        </div>
-                    {% else %}
-                        <div class="column">
-                            <p class="is-wrapped">{% translate "Hold your transponder to a terminal and follow the instructions on screen to pair." %}</p>
-                        </div>
-                    {% endif %}
+<div class="columns">
+    <div class="column same-height">
+        <div class="box is-fullheight">
+            <div class="columns is-vcentered has-minheight">
+                <div class="column">
+                    <p class="heading"> Current balance </p>
+                    <p class="title {% if wallet.giftcard.value > 0 %}has-text-success{% else %}has-text-danger{% endif %} is-2">
+                        {{ wallet.giftcard.value|floatformat:2 }}&nbsp;€</p>
                 </div>
             </div>
         </div>
     </div>
-    <div class="box">
-        <p class="heading"> Latest 20 transactions </p>
-        <hr>
-        <div>
-            {% for transaction in giftcardtransaction_list %}
-                <article class="media">
+    <div class="column same-height">
+        <div class="box is-fullheight">
+            <div class="columns is-vcentered has-minheight">
+                <div class="column">
+                    <div class="columns is-mobile">
+                        <div class="column is-narrow"><i class="fa fa-wifi fa-3x"></i></div>
+                        <div class="column">
+                            <p class="heading">Your transponder</p>
+                            {% if transponder_paired %}
+                            <p class="tag is-light is-success">{% translate "Successfully paired" %}</p>
+                            {% else %}
+                            <p class="tag is-light is-danger">{% translate "Not paired" %}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if transponder_paired %}
+                <div class="column is-narrow">
+                    <form method="post" action="{% organizer_url request.organizer " plugins:pretix_wallet:unpair
+                    " %}">
+                    {% csrf_token %}
+                    <button type="submit" class="button is-outlined is-danger has-icons-left is-fullwidth">
+                        <span class="icon"><i class="fa fa-unlink"></i></span>
+                        <span>{% translate "Forget my transponder" %}</span>
+                    </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="column">
+                    <p class="is-wrapped">{% translate "Hold your transponder to a terminal and follow the instructions on screen to pair." %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if wallet.giftcard.value < 0 %}
+<article class="message is-large is-danger">
+  <div class="message-header">
+    <p>{% translate "Oh no, your balance is negative!" %}</p>
+  </div>
+  <div class="message-body">
+      {% translate "Please top-up as soon as possible so we can keep providing this shared coffee machine. We sell coffee at cost, don't make money and have little buffer." %}
+
+      <ol class="ml-6 mt-1 is-small">
+          <li>
+              {% blocktranslate trimmed %}
+                  Put cash into an envelope and label it with your HPI username ({{ user_slug }}).
+                  Throw it into the Fachschaftsrat mailbox behind the reception in the main building.
+                  You can find envelops in the magazine holder next to the FSR office.
+              {% endblocktranslate %}
+          </li>
+          <li>
+              {% translate "Wait. We manually process each payment. But you can drink coffee right away: we automatically deduct that from your top-up." %}
+          </li>
+      </ol>
+  </div>
+</article>
+{% endif %}
+
+<div class="box">
+    <p class="heading"> Latest 20 transactions </p>
+    <hr>
+    <div>
+        {% for transaction in giftcardtransaction_list %}
+        <article class="media">
+            {% if transaction.order %}
+            <div class="media-left is-hidden-mobile"><span class="icon is-large"><i
+                    class="fa-2x fa fa-cash-register"></i></span></div>
+            {% else %}
+            <div class="media-left is-hidden-mobile"><span class="icon is-large"><i
+                    class="fa-2x fa fa-bolt"></i></span></div>
+            {% endif %}
+            <div class="media-content">
+                <div class="content">
                     {% if transaction.order %}
-                    <div class="media-left is-hidden-mobile"><span class="icon is-large"><i
-                            class="fa-2x fa fa-cash-register"></i></span></div>
-                    {% else %}
-                    <div class="media-left is-hidden-mobile"><span class="icon is-large"><i
-                        class="fa-2x fa fa-bolt"></i></span></div>
-                    {% endif %}
-                    <div class="media-content">
-                        <div class="content">
-                            {% if transaction.order %}
-                                <p>
-                                    <strong>
-                                        <a class="orderlink" href="{% abseventurl transaction.order.event "presale:event.order" order=transaction.order.code secret=transaction.order.secret %}" target="_blank">
-                                            {{ transaction.order }}
-                                        </a>
-                                    </strong>
-                                    <br>
-                                    <span>{{ transaction.order.positions.count }}
+                    <p>
+                        <strong>
+                            <a class="orderlink" href="{% abseventurl transaction.order.event 'presale:event.order'
+                            order=transaction.order.code secret=transaction.order.secret %}" target="_blank">
+                            {{ transaction.order }}
+                            </a>
+                        </strong>
+                        <br>
+                        <span>{{ transaction.order.positions.count }}
                                         {% blocktranslate trimmed count count=transaction.order.positions.count %}
                                             item
                                         {% plural %}
                                             items
                                         {% endblocktranslate %}
                                     </span><span>&nbsp;·&nbsp;</span><span>{{ transaction.datetime }}</span>
-                                </p>
+                    </p>
 
-                            {% else %}
-                                <p>
-                                    <strong>{{ transaction.text }}</strong><br><span></span><span>{{ transaction.datetime }}</span>
-                                </p>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="media-right">
-                        <p class="title {% if transaction.value > 0 %}has-text-success{% else %}has-text-danger{% endif %} is-4">{{ transaction.value }}
-                            &nbsp;€</p>
-                    </div>
-                </article>
-            {% endfor %}
-        </div>
+                    {% else %}
+                    <p>
+                        <strong>{{ transaction.text }}</strong><br><span></span><span>{{ transaction.datetime }}</span>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="media-right">
+                <p class="title {% if transaction.value > 0 %}has-text-success{% else %}has-text-danger{% endif %} is-4">
+                    {{ transaction.value }}
+                    &nbsp;€</p>
+            </div>
+        </article>
+        {% endfor %}
     </div>
+</div>
 {% endblock %}

@@ -17,7 +17,7 @@ from pretix_wallet.models import CustomerWallet
 from pretix_wallet.pagination import CustomPagination, ProductPagination
 from pretix_wallet.serializers import ProductSerializer, WalletSerializer, TransactionSerializer, \
     CustomerWalletSerializer
-from pretix_wallet.utils import link_token_to_wallet, create_customerwallet_if_not_exists
+from pretix_wallet.utils import link_token_to_wallet, create_customerwallet_if_not_exists, email_address_to_user_slug
 
 
 class TerminalAuthMixin:
@@ -42,6 +42,7 @@ class TransactionListView(CustomerRequiredMixin, WalletRequiredMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx['wallet'] = self.request.customer.wallet
         ctx['transponder_paired'] = self.request.customer.wallet.giftcard.linked_media.exists()
+        ctx['user_slug'] = email_address_to_user_slug(self.request.customer.email)
         return ctx
 
 

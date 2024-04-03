@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-07 19:01+0100\n"
+"POT-Creation-Date: 2024-04-03 18:29+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Your name\n"
 "Language-Team: \n"
@@ -10,3 +10,187 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: pretix_wallet/apps.py:17 pretix_wallet/payment.py:25
+#: pretix_wallet/payment.py:26
+msgid "Wallet"
+msgstr "Wallet"
+
+#: pretix_wallet/apps.py:19
+msgid "A user-based wallet based on pretix giftcards"
+msgstr "Ein nutzer*innen-basiertes Wallet mittels pretix Wertgutscheinen"
+
+#: pretix_wallet/payment.py:29
+#, fuzzy
+#| msgid ""
+#| "Pay with balance on your wallet. Pleas note that this is only possible if "
+#| "you already topped up your wallet and the balance is not negative."
+msgid ""
+"Pay with balance on your wallet. Please note that this is only possible if "
+"you already topped up your wallet and the balance is not negative."
+msgstr ""
+"Bezahle mit deinem Wallet-Guthaben. Das klappt nur, wenn Du Dein Wallet "
+"aufgeladen hast und noch Guthaben übrig ist."
+
+#: pretix_wallet/payment.py:32
+#, fuzzy
+#| msgid ""
+#| "The full amount will be deducted from your wallet after you confirm the "
+#| "order."
+msgid ""
+"The payment amount will be deducted from your wallet after you confirm the "
+"order."
+msgstr ""
+"Der Zahlungsbetrag wird von Deinem Wallet abgezogen, wenn Du die Bestellung "
+"abschließt."
+
+#: pretix_wallet/payment.py:37 pretix_wallet/payment.py:108
+msgid "You do not have a wallet."
+msgstr "Du hast kein Wallet."
+
+#: pretix_wallet/payment.py:40 pretix_wallet/payment.py:111
+msgid ""
+"Your wallet has a negative balance. Please top it up or use another payment "
+"method."
+msgstr ""
+"Dein Wallet hat negatives Guthaben. Bitte lade es auf oder nutze eine andere "
+"Zahlungsmethode."
+
+#: pretix_wallet/payment.py:89
+msgid "This gift card does not support this currency."
+msgstr "Dieser Wertgutschein unterstützt diese Währung nicht."
+
+#: pretix_wallet/payment.py:91
+msgid "This gift card is not accepted by this event organizer."
+msgstr "Dieser Wertgutschein wird von dieser Veranstalter*in nicht akzeptiert."
+
+#: pretix_wallet/payment.py:115
+msgid "Wallet payments cannot be accepted for this event."
+msgstr "Wallet-Bezahlungen werden für dieses Event nicht angenommen."
+
+#: pretix_wallet/payment.py:125
+msgid "API key"
+msgstr "API-Key"
+
+#: pretix_wallet/payment.py:125
+msgid ""
+"The API key that the terminal uses to authenticate against the POS api "
+"provided by this plugin."
+msgstr ""
+"Der API-Key wird vom Terminal genutzt, um sich gegen die POS-API zu "
+"authentifizieren."
+
+#: pretix_wallet/templates/pretix_wallet/pairing.html:5
+msgid "Pairing"
+msgstr "Paarung"
+
+#: pretix_wallet/templates/pretix_wallet/pairing.html:10
+msgid "Pair your transponder"
+msgstr "Paare deinen Transponder"
+
+#: pretix_wallet/templates/pretix_wallet/pairing.html:11
+#, python-format
+msgid ""
+"You are about to pair your transponder (%(token_id)s) with your wallet "
+"(%(name)s). Please make sure to keep it with you at all times as it can be "
+"used to debit balance at our terminals from now on."
+msgstr ""
+"Du bist dabei, Deinen Transponder (%(token_id)s) mit deinem Wallet "
+"(%(name)s) zu paaren. Bitte stelle sicher, dass du ihn immer dabei hast, "
+"weil Du mit ihm mit deinem Guthaben an unseren Terminals bezahlen kannst."
+
+#: pretix_wallet/templates/pretix_wallet/pairing.html:15
+msgid ""
+"Your wallet is already paired to a transponder. If you continue with this "
+"pairing, the old pairing will be removed."
+msgstr ""
+"Dein Wallet ist bereits mit einem Transponder gepaart. Wenn Du fortfährst, "
+"wird der alte Transponder entfernt."
+
+#: pretix_wallet/templates/pretix_wallet/pairing.html:22
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: pretix_wallet/templates/pretix_wallet/pairing.html:23
+msgid "Pair"
+msgstr "Paaren"
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:7
+msgid "Transactions"
+msgstr "Transaktionen"
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:32
+msgid "Successfully paired"
+msgstr "Erfolgreich gepaart"
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:34
+msgid "Not paired"
+msgstr "Nicht gepaart"
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:46
+msgid "Forget my transponder"
+msgstr "Vergesse meinen Transponder"
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:52
+msgid ""
+"Hold your transponder to a terminal and follow the instructions on screen to "
+"pair."
+msgstr ""
+"Zum Paaren halte Deinen Transponder an ein Terminal und folge den "
+"Instruktionen auf dem Bildschirm"
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:63
+msgid "Oh no, your balance is negative!"
+msgstr "Oh nein, dein Guthaben ist negativ!"
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:66
+msgid ""
+"Please top-up as soon as possible so we can keep providing this shared "
+"coffee machine. We sell coffee at cost, don't make money and have little "
+"buffer."
+msgstr ""
+"Bitte lade Dein Wallet so schnell wie möglich auf, damit wir diese geteilte "
+"Kaffeemaschine weiter betreiben können. Wir verkaufen den Kaffee zum "
+"Selbstkostenpreis, verdienen kein Geld damit und haben wenig Puffer."
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:70
+#, fuzzy, python-format
+#| msgid ""
+#| "Put cash into an envelope and label it with your HPI username (firstname."
+#| "lastname). Throw it into the Fachschaftsrat mailbox behind the reception "
+#| "in the main building. You can find envelops in the magazine holder next "
+#| "to the FSR office."
+msgid ""
+"Put cash into an envelope and label it with your HPI username "
+"(%(user_slug)s). Throw it into the Fachschaftsrat mailbox behind the "
+"reception in the main building. You can find envelops in the magazine holder "
+"next to the FSR office."
+msgstr ""
+"Lege einen Briefumschlag mit dem Geld, das Du aufladen möchest, in einen "
+"Briefumschlag und beschrifte ihn mit Deinem HPI-Nutzernamen (%(user_slug)s). "
+"Dann wirf ihn in den Fachschaftsrat-Briefkasten hinter dem "
+"Empfang im Hauptgebäude. Du findest Umschläge im Magazinständer neben dem "
+"FSR-Büro."
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:77
+msgid ""
+"Wait. We manually process each payment. But you can drink coffee right away: "
+"we automatically deduct that from your top-up."
+msgstr ""
+"Warte eine Weile. Wir verarbeiten Zahlungen manuell. Kaffee kannst Du "
+"allerdings trotzdem sofort trinken: Wir verrechnen das automatisch mit "
+"Deiner Aufladung."
+
+#: pretix_wallet/templates/pretix_wallet/transaction_list.html:109
+msgid "item"
+msgid_plural "items"
+msgstr[0] "Produkt"
+msgstr[1] "Produkte"
+
+#: pretix_wallet/views.py:59
+msgid "Your transponder has been paired succesfully."
+msgstr "Dein Transponder wurde erfolgreich gepaart."
+
+#: pretix_wallet/views.py:66
+msgid "Your transponder has been unpaired succesfully."
+msgstr "Dein Transponder wurde erfolgreich entpaart."

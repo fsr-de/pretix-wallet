@@ -26,10 +26,10 @@ class WalletPaymentProvider(GiftCardPayment):
     public_name = _("Wallet")
 
     def payment_form_render(self, request: HttpRequest, total: Decimal, order: Order=None) -> str:
-        return _("Pay with balance on your wallet. Pleas note that this is only possible if you already topped up your wallet and the balance is not negative.")
+        return _("Pay with balance on your wallet. Please note that this is only possible if you already topped up your wallet and the balance is not negative.")
 
     def checkout_confirm_render(self, request, order: Order=None, info_data: dict=None) -> str:
-        return _("The full amount will be deducted from your wallet after you confirm the order.")
+        return _("The payment amount will be deducted from your wallet after you confirm the order.")
 
     def checkout_prepare(self, request: HttpRequest, cart: Dict[str, Any]) -> Union[bool, str]:
         if request.customer:
