@@ -5,6 +5,7 @@ from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.utils.translation import gettext_lazy as _
 from pretix.base.models import GiftCardTransaction, Item
+from pretix.multidomain.urlreverse import build_absolute_uri
 from pretix.presale.utils import _detect_event
 from pretix.presale.views.customer import CustomerRequiredMixin
 from rest_framework.mixins import RetrieveModelMixin, CreateModelMixin
@@ -57,14 +58,14 @@ class PairingView(CustomerRequiredMixin, WalletRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         link_token_to_wallet(self.request.organizer, self.request.customer, self.kwargs["token_id"])
         messages.success(request, _("Your transponder has been paired succesfully."))
-        return redirect("plugins:pretix_wallet:transactions", organizer=self.request.organizer.slug)
+        return redirect(build_absolute_uri(self.request.organizer, "plugins:pretix_wallet:transactions"))
 
 
 class RemovePairingView(CustomerRequiredMixin, WalletRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.request.customer.wallet.giftcard.linked_media.clear()
         messages.success(request, _("Your transponder has been unpaired succesfully."))
-        return redirect("plugins:pretix_wallet:transactions", organizer=self.request.organizer.slug)
+        return redirect(build_absolute_uri(self.request.organizer, "plugins:pretix_wallet:transactions"))
 
 
 class ProductViewSet(TerminalAuthMixin, ReadOnlyModelViewSet):

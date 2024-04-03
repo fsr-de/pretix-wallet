@@ -1,4 +1,5 @@
 {% extends "pretix_wallet/wallet_base.html" %}
+{% load wallet_tags %}
 {% load i18n %}
 
 {% block title %}
@@ -19,7 +20,7 @@
         {% endif %}
         <form class="mt-3" method="post">
             {% csrf_token %}
-            <a class="button is-danger is-outlined" href="{% url "plugins:pretix_wallet:transactions" request.organizer.slug %}">{% translate "Cancel" %}</a>
+            <a class="button is-danger is-outlined" href="{% organizer_url request.organizer "plugins:pretix_wallet:transactions" %}">{% translate "Cancel" %}</a>
             <input type="submit" class="button is-success" value="{% translate "Pair" %}" />
         </form>
     </div>
