@@ -3,7 +3,7 @@ from datetime import datetime
 from django.db import transaction
 from pretix.base.models import Item, Order, OrderPosition, GiftCardTransaction
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SerializerMethodField, CharField, ListField, DateTimeField, IntegerField
+from rest_framework.fields import SerializerMethodField, CharField, ListField, DateTimeField, IntegerField, FloatField
 from rest_framework.serializers import Serializer, ModelSerializer
 
 from pretix_wallet.models import CustomerWallet
@@ -79,7 +79,7 @@ class TransactionSerializer(Serializer):
 
 
 class CustomerWalletSerializer(ModelSerializer):
-    initial_balance = IntegerField(write_only=True, required=False)
+    initial_balance = FloatField(write_only=True, required=False)
     token_id = CharField(write_only=True, required=False)
     customer = CustomerRelatedField(slug_field="identifier")
 
