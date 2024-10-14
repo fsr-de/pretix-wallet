@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.utils.translation import gettext_lazy as _
-from pretix.base.models import GiftCardTransaction, Item
+from pretix.base.models import GiftCardTransaction
 from pretix.multidomain.urlreverse import build_absolute_uri
 from pretix.presale.utils import _detect_event
 from pretix.presale.views.customer import CustomerRequiredMixin

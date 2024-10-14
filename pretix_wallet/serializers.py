@@ -3,7 +3,7 @@ from datetime import datetime
 from django.db import transaction
 from pretix.base.models import Item, Order, OrderPosition, GiftCardTransaction
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SerializerMethodField, CharField, ListField, DateTimeField, IntegerField, FloatField
+from rest_framework.fields import SerializerMethodField, CharField, ListField, DateTimeField, FloatField
 from rest_framework.serializers import Serializer, ModelSerializer
 
 from pretix_wallet.models import CustomerWallet

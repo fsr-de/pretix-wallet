@@ -25,10 +25,11 @@ class WalletPaymentProvider(GiftCardPayment):
     verbose_name = _("Wallet")
     public_name = _("Wallet")
 
-    def payment_form_render(self, request: HttpRequest, total: Decimal, order: Order=None) -> str:
-        return _("Pay with balance on your wallet. Please note that this is only possible if you already topped up your wallet and the balance is not negative.")
+    def payment_form_render(self, request: HttpRequest, total: Decimal, order: Order = None) -> str:
+        return _("Pay with balance on your wallet. Please note that this is only possible "
+                 "if you already topped up your wallet and the balance is not negative.")
 
-    def checkout_confirm_render(self, request, order: Order=None, info_data: dict=None) -> str:
+    def checkout_confirm_render(self, request, order: Order = None, info_data: dict = None) -> str:
         return _("The payment amount will be deducted from your wallet after you confirm the order.")
 
     def checkout_prepare(self, request: HttpRequest, cart: Dict[str, Any]) -> Union[bool, str]:
@@ -122,7 +123,8 @@ class WalletPaymentProvider(GiftCardPayment):
     @property
     def settings_form_fields(self):
         return OrderedDict(list(super().settings_form_fields.items()) + [
-            ('api_key', CharField(label=_("API key"), help_text=_("The API key that the terminal uses to authenticate against the POS api provided by this plugin."))),
+            ('api_key', CharField(label=_("API key"), help_text=_("The API key that the terminal uses to authenticate against "
+                                                                  "the POS api provided by this plugin."))),
         ])
 
     @property
