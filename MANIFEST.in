@@ -2,4 +2,5 @@ recursive-include pretix_wallet/static *
 recursive-include pretix_wallet/templates *
 recursive-include pretix_wallet/locale *
 include LICENSE
+include *.md
 exclude .gitlab-ci.yml
