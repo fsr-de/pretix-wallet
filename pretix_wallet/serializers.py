@@ -58,11 +58,16 @@ class TransactionSerializer(Serializer):
     def create(self, validated_data):
         with transaction.atomic():
             wallet = self.context["wallet"]
+            # create sales channel if it does not exist
+            if not self.context["event"].organizer.sales_channels.filter(identifier="api.terminal").exists():
+                self.context["event"].organizer.sales_channels.create(identifier="api.terminal", label="API Terminal", type="api", )
+            sales_channel = self.context["event"].organizer.sales_channels.get(identifier="api.terminal")
             order = Order(event=self.context["event"], customer=wallet.customer)
             positions = []
             for item in validated_data["products"]:
                 positions.append(OrderPosition(order=order, item=item, price=item.default_price))
             order.total = sum([p.price for p in positions])
+            order.sales_channel = sales_channel
             order.save()
             for p in positions:
                 p.save()
