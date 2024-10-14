@@ -14,10 +14,14 @@ class TerminalAuthentication(TokenAuthentication):
 
     def authenticate(self, request):
         self.request = request
-        request.event = Event.objects.filter(
-            slug=request.resolver_match.kwargs['event'],
-            organizer__slug=request.resolver_match.kwargs['organizer'],
-        ).select_related('organizer').first()
+        request.event = (
+            Event.objects.filter(
+                slug=request.resolver_match.kwargs["event"],
+                organizer__slug=request.resolver_match.kwargs["organizer"],
+            )
+            .select_related("organizer")
+            .first()
+        )
         if not request.event:
             return False
         return super().authenticate(request)
